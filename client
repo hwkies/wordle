@@ -14,6 +14,8 @@ import ssl
 #create an accessible array of lines from the wordlist
 wordlist = open(os.path.join(sys.path[0], "wordlist.txt"))
 words = wordlist.readlines()
+for word in words:
+    word = word[:5]
 
 #return true if a given word contains a yellow letter, false otherwise
 def yellowLetters(word, marks, guessedWord):      
@@ -60,7 +62,7 @@ def getRandWord():
     randNum = randint(1, numWords)
     randWord = words[randNum - 1]
 
-    return randWord[:5]
+    return randWord
 
 #create a TCP client and send to receive data
 def communicateTCP(hostname, user):
@@ -111,7 +113,7 @@ def responseHandler(response, client):
     #print the final flag
     
     print("You took %d guesses!" % stringResp["numGuesses"])
-    print("The secret word was: %s!" % stringResp["answer"])
+    print("The secret word was: %s!" % stringResp["answer"][:5])
     return
 
 #command line stuff, NEEDS TO BE FLESHED OUT

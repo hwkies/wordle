@@ -9,6 +9,8 @@ from random import randint
 #create an accessible array of words from the wordlist
 wordlist = open(os.path.join(sys.path[0], "wordlist.txt"))
 words = wordlist.readlines()
+for word in words:
+    word = word[:5]
 
 #get a random word in the available words
 def getRandWord():
@@ -17,7 +19,7 @@ def getRandWord():
     #random word in the list of words
     randNum = randint(1, numWords)
     randWord = words[randNum - 1]
-    return randWord[:5]
+    return randWord
 
 hostname = "127.0.0.1"
 mysocket = None
