@@ -2,14 +2,14 @@
 
 import socket
 import json
-import ssl
+import sys
+sys.path.append('..')
 from utils import Utils
 
 util = Utils()
-
 hostname = "127.0.0.1"
 mysocket = None
-port = 27994
+port = 27993
 answer = util.getRandWord()
 guessList = []
 
@@ -52,12 +52,10 @@ def getMarks(word):
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     s.bind((hostname, port))
     s.listen()
-    sslSock = context.wrap_socket(sock=s, server_side=True)
     print("Socket connection opened and listening")
-    mysocket, addr = sslSock.accept()
+    mysocket, addr = s.accept()
     with mysocket:
         while True:
             data = json.loads(mysocket.recv(25600).decode())

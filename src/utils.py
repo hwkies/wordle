@@ -1,7 +1,9 @@
-import os, sys
-from random import randint
+import os
+import sys
+import random
+
 class Utils:
-    wordlist = open(os.path.join(sys.path[0], "wordlist.txt"))
+    wordlist = open(os.path.join(sys.path[len(sys.path)-1], "wordlist.txt"))
     words = wordlist.readlines()
     for word in words:
         word = word[:5]
@@ -11,6 +13,6 @@ class Utils:
         #number of words in the list
         numWords = len(self.words)
         #random word in the list of words
-        randNum = randint(1, numWords)
+        randNum = random.randint(1, numWords)
         randWord = self.words[randNum - 1]
         return randWord
