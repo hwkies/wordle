@@ -1,21 +1,17 @@
 #!/usr/bin/env python3
 
-from random import randint
-import os
 import sys
 import socket
 import json
 import ssl
+from utils import Utils
 
 #NEED TO DO
 #1. fill in README.md
 #2. OPTIONAL: write more comprehensive wordle bot
 
-#create an accessible array of lines from the wordlist
-wordlist = open(os.path.join(sys.path[0], "wordlist.txt"))
-words = wordlist.readlines()
-for word in words:
-    word = word[:5]
+util = Utils()
+port = 27993
 
 #return true if a given word contains a yellow letter, false otherwise
 def yellowLetters(word, marks, guessedWord):      
@@ -31,7 +27,7 @@ def yellowLetters(word, marks, guessedWord):
 #shrink the wordlist according to a set of numerical marks and a guessed word
 def shrinkWordlist(marks, guessedWord):
     newWords = []
-    for word in words:
+    for word in util.words:
         for i in range(5):
             #letter in guess is black and in the same spot in dictionary word
             if guessedWord[i] == word[i] and marks[i] == 0:
@@ -51,18 +47,7 @@ def shrinkWordlist(marks, guessedWord):
                 break  
     #remove all words that need to be removed from wordlist                 
     for line in newWords:
-        words.remove(line)
-
-#get a random word in the available words
-def getRandWord():
-    #number of words in the list
-    numWords = len(words)
-
-    #random word in the list of words
-    randNum = randint(1, numWords)
-    randWord = words[randNum - 1]
-
-    return randWord
+        util.words.remove(line)
 
 #create a TCP client and send to receive data
 def communicateTCP(hostname, user):
@@ -95,7 +80,7 @@ def responseHandler(response, client):
     stringResp = response
     #if start message, get id and make a guess
     if stringResp["type"] == "start":
-        guess = json.dumps({'type': 'guess', 'word': getRandWord()}) + '\n'
+        guess = json.dumps({'type': 'guess', 'word': util.getRandWord()}) + '\n'
         print(guess)
         client.send(guess.encode())
         stringResp = json.loads(client.recv(25600).decode())
@@ -105,7 +90,7 @@ def responseHandler(response, client):
         #edit wordlist and try new word
         lastGuess = stringResp["guesses"][len(stringResp["guesses"]) - 1]
         shrinkWordlist(lastGuess["marks"], lastGuess["word"])
-        guess = json.dumps({'type': 'guess', 'word': getRandWord()}) + '\n'
+        guess = json.dumps({'type': 'guess', 'word': util.getRandWord()}) + '\n'
         print(guess)
         client.send(guess.encode())
         stringResp = json.loads(client.recv(25600).decode())
@@ -113,7 +98,7 @@ def responseHandler(response, client):
     #print the final flag
     
     print("You took %d guesses!" % stringResp["numGuesses"])
-    print("The secret word was: %s!" % stringResp["answer"][:5])
+    print("The secret word was: %s!" % stringResp["answer"])
     return
 
 #command line stuff, NEEDS TO BE FLESHED OUT
@@ -131,7 +116,6 @@ if numArgs == 4 and args[0] == "-p":
     port = int(args[1])
     communicateTCP(args[2], args[3])
 else:
-    port = 27993
     communicateTCP(args[0], args[1])
 
 
