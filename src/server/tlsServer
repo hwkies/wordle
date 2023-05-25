@@ -3,70 +3,27 @@
 import socket
 import json
 import ssl
-import sys
-sys.path.append('..')
-import utils
+from server import Server
 
-util = utils.Utils()
-
-hostname = "127.0.0.1"
-mysocket = None
-port = 27994
-answer = util.getRandWord()
-guessList = []
-
-def typeParser(msg):
-    if msg["type"] == "hello":
-        sendStart()
-        print("Game started")
-        return True
-    # elif msg["type"] == "guess" and msg["word"] not in words:
-    #     retryMsg = {"type": "retry", "guesses": guessList}
-    #     mysocket.send(json.dumps(retryMsg).encode())
-    #     print("%s: not in wordlist" % msg["word"])
-    #     return True
-    elif msg["type"] == "guess" and msg["word"] != answer:
-        marks = getMarks(msg["word"])
-        guessList.append({"word": msg["word"], "marks": marks})
-        retryMsg = {"type": "retry", "guesses": guessList}
-        print(retryMsg)
-        mysocket.send(json.dumps(retryMsg).encode())
-        return True
-    elif msg["type"] == "guess" and msg["word"] == answer:
-        byeMsg = {"type": "bye", "answer": answer, "numGuesses": len(guessList)+1}  
-        print(byeMsg)  
-        mysocket.send(json.dumps(byeMsg).encode())
-        return False
-        
-def sendStart():
-    startMsg = {"type": "start"}
-    print(startMsg)
-    mysocket.send(json.dumps(startMsg).encode())
-
-def getMarks(word):
-    marks = [0, 0, 0, 0, 0]
-    for idx in range(5):
-        if word[idx] == answer[idx]:
-            marks[idx] = 2
-        elif word[idx] != answer[idx] and word[idx] in answer:
-            marks[idx] = 1
-    return marks
-
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-    s.bind((hostname, port))
-    s.listen()
-    sslSock = context.wrap_socket(sock=s, server_side=True)
-    print("Socket connection opened and listening")
-    mysocket, addr = sslSock.accept()
-    with mysocket:
-        while True:
-            data = json.loads(mysocket.recv(25600).decode())
-            print(data)
-            if typeParser(data) == False:
-                break  
-        mysocket.shutdown(socket.SHUT_RDWR)
-        mysocket.close()
-    s.shutdown(socket.SHUT_RDWR)
-    s.close()  
+class TLSServer(Server):
+    port = 27994
+    hostname = "127.0.0.1"
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        s.bind((hostname, port))
+        s.listen()
+        sslSock = context.wrap_socket(sock=s, server_side=True)
+        print("Socket connection opened and listening...")
+        mysocket, addr = sslSock.accept()
+        with mysocket:
+            server = Server(mysocket)
+            while True:
+                data = json.loads(mysocket.recv(25600).decode())
+                print(data)
+                if server.typeParser(data) == False:
+                    break  
+            mysocket.shutdown(socket.SHUT_RDWR)
+            mysocket.close()
+        s.shutdown(socket.SHUT_RDWR)
+        s.close()  

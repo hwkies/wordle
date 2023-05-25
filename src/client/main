@@ -20,7 +20,7 @@ def __main__():
         """
         print(returnString)
     elif numArgs == 1:
-        tcpClient.communicateTCP(args[0], 27994)
+        tcpClient.communicateTCP(args[0], 27993)
     elif numArgs == 2 and (args[1] == "-s" or args[1] == "--ssl"):
         tlsClient.communicateTLS(args[0], 27994)
     elif numArgs == 3 and (args[1] == "-p" or args[1] == "--port"):
