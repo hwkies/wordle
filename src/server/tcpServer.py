@@ -1,29 +1,30 @@
-#!/usr/bin/env python3
-
 import socket
 import json
-import ssl
 from server import Server
 
-class TLSServer(Server):
-    port = 27994
+class TCPServer(Server):
+    """
+    Represents a TCP server that listens for incoming connections and handles data communication.
+
+    Attributes:
+        port (int): The port number to listen on.
+        hostname (str): The hostname or IP address to bind the server to.
+    """
+
+    port = 27993
     hostname = "127.0.0.1"
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         s.bind((hostname, port))
         s.listen()
-        sslSock = context.wrap_socket(sock=s, server_side=True)
         print("Socket connection opened and listening...")
-        mysocket, addr = sslSock.accept()
+        mysocket, addr = s.accept()
         with mysocket:
             server = Server(mysocket)
             while True:
                 data = json.loads(mysocket.recv(25600).decode())
-                print(data)
                 if server.typeParser(data) == False:
                     break  
             mysocket.shutdown(socket.SHUT_RDWR)
             mysocket.close()
-        s.shutdown(socket.SHUT_RDWR)
-        s.close()  
+        s.close()
